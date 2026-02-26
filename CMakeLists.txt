@@ -6,7 +6,6 @@ set(U8G2_INCLUDE_DIRS
 
 set(U8G2_PRIV_INCLUDE_DIRS
 	"src/core"
-	"src/mui"
 )
 
 file(GLOB U8G2_CORE_SOURCES
@@ -17,15 +16,21 @@ file(GLOB U8G2_DRIVER_SOURCES
 	"src/driver/*.c"
 )
 
-file(GLOB U8G2_MUI_SOURCES
-	"src/mui/*.c"
-)
-
 set(U8G2_SOURCES
 	${U8G2_CORE_SOURCES}
 	${U8G2_DRIVER_SOURCES}
-	${U8G2_MUI_SOURCES}
 )
+
+# 可选 MUI 源目录（兼容 src/mui 与 src/mnui）
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/src/mui")
+	file(GLOB U8G2_MUI_SOURCES "src/mui/*.c")
+	list(APPEND U8G2_SOURCES ${U8G2_MUI_SOURCES})
+	list(APPEND U8G2_PRIV_INCLUDE_DIRS "src/mui")
+elseif(EXISTS "${CMAKE_CURRENT_LIST_DIR}/src/mnui")
+	file(GLOB U8G2_MUI_SOURCES "src/mnui/*.c")
+	list(APPEND U8G2_SOURCES ${U8G2_MUI_SOURCES})
+	list(APPEND U8G2_PRIV_INCLUDE_DIRS "src/mnui")
+endif()
 
 # 可选端口层（若目录存在源文件则自动编入）
 if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/src/port")
