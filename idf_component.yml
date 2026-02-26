@@ -1,0 +1,7 @@
+version: "0.1.0"
+description: "u8g2 graphics library component for ESP-IDF"
+url: https://github.com/Nixy4/u8g2
+repository: https://github.com/Nixy4/u8g2.git
+issues: https://github.com/Nixy4/u8g2/issues
+dependencies:
+  idf: ">=5.0"
