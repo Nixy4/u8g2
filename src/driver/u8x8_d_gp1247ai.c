@@ -1,11 +1,11 @@
 /*
 
   u8x8_d_gp1247ai.c
-  
+
   252x64
-  
+
   https://github.com/olikraus/u8g2/issues/1907
-  https://github.com/olikraus/u8g2/pull/1892  
+  https://github.com/olikraus/u8g2/pull/1892
 
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
@@ -40,7 +40,9 @@
 
 #include "u8x8.h"
 
-#define SWAP8(a) ((((a)&0x80) >> 7) | (((a)&0x40) >> 5) | (((a)&0x20) >> 3) | (((a)&0x10) >> 1) | (((a)&0x08) << 1) | (((a)&0x04) << 3) | (((a)&0x02) << 5) | (((a)&0x01) << 7))
+#define SWAP8(a)                                                                             \
+    ((((a) & 0x80) >> 7) | (((a) & 0x40) >> 5) | (((a) & 0x20) >> 3) | (((a) & 0x10) >> 1) | \
+     (((a) & 0x08) << 1) | (((a) & 0x04) << 3) | (((a) & 0x02) << 5) | (((a) & 0x01) << 7))
 
 /* ========== GP1247AI ========== */
 static const u8x8_display_info_t u8x8_gp1247ai_display_info = {
@@ -59,7 +61,7 @@ static const u8x8_display_info_t u8x8_gp1247ai_display_info = {
     /* data_setup_time_ns = */ 60,        /* tsu     */
     /* write_pulse_width_ns = */ 120,     /* tcyc/2  */
     /* tile_width = */ 32,                /* 32*8=256 memory size */
-    /* tile_height = */ 8,                 /* 8*8=64 memory size */
+    /* tile_height = */ 8,                /* 8*8=64 memory size */
     /* default_x_offset = */ 0,           /*         */
     /* flipmode_x_offset = */ 0,          /*         */
     /* pixel_width = */ 253,              /* display size */
@@ -85,11 +87,17 @@ static const uint8_t u8x8_d_gp1247ai_init_seq[] = {
     U8X8_END_TRANSFER(),
 
     U8X8_START_TRANSFER(),
-    U8X8_CAAAA(SWAP8(0x0B1), SWAP8(0x020), SWAP8(0x03F), SWAP8(0x000), SWAP8(0x001)), /* Internal Speed Setting */
+    U8X8_CAAAA(SWAP8(0x0B1),
+               SWAP8(0x020),
+               SWAP8(0x03F),
+               SWAP8(0x000),
+               SWAP8(0x001)), /* Internal Speed Setting */
     U8X8_END_TRANSFER(),
 
     U8X8_START_TRANSFER(),
-    U8X8_CAA(SWAP8(0x0A0), SWAP8(0x000), SWAP8(0x028)), /* Dimming level Setting (1024 level, 0x3FF max) */
+    U8X8_CAA(SWAP8(0x0A0),
+             SWAP8(0x000),
+             SWAP8(0x028)), /* Dimming level Setting (1024 level, 0x3FF max) */
     U8X8_END_TRANSFER(),
 
     U8X8_START_TRANSFER(),
@@ -116,8 +124,7 @@ static const uint8_t u8x8_d_gp1247ai_init_seq[] = {
     U8X8_END() /* end of sequence */
 };
 static const uint8_t u8x8_d_gp1247ai_standby_seq[] = {
-    U8X8_START_TRANSFER(),
-    U8X8_C(SWAP8(0x061)), /* Standby */
+    U8X8_START_TRANSFER(), U8X8_C(SWAP8(0x061)), /* Standby */
     U8X8_END_TRANSFER(),
 
     U8X8_END() /* end of sequence */
@@ -129,7 +136,9 @@ static const uint8_t u8x8_d_gp1247ai_wakeup_seq[] = {
     U8X8_DLY(1), /* Wait for OSC stabilize */
 
     U8X8_START_TRANSFER(),
-    U8X8_CA(SWAP8(0x080), SWAP8(0x080)), /* After entering standby mode, the SC bit will be automatically cleared */
+    U8X8_CA(
+        SWAP8(0x080),
+        SWAP8(0x080)), /* After entering standby mode, the SC bit will be automatically cleared */
     U8X8_END_TRANSFER(),
 
     U8X8_END() /* end of sequence */
@@ -142,49 +151,49 @@ uint8_t u8x8_d_gp1247ai_common(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void 
     uint8_t swapped_byte;
     switch (msg)
     {
-    case U8X8_MSG_DISPLAY_SET_POWER_SAVE:
-        if (arg_int == 0)
-            u8x8_cad_SendSequence(u8x8, u8x8_d_gp1247ai_wakeup_seq);
-        else
-            u8x8_cad_SendSequence(u8x8, u8x8_d_gp1247ai_standby_seq);
-        break;
+        case U8X8_MSG_DISPLAY_SET_POWER_SAVE:
+            if (arg_int == 0)
+                u8x8_cad_SendSequence(u8x8, u8x8_d_gp1247ai_wakeup_seq);
+            else
+                u8x8_cad_SendSequence(u8x8, u8x8_d_gp1247ai_standby_seq);
+            break;
 #ifdef U8X8_WITH_SET_CONTRAST
-    case U8X8_MSG_DISPLAY_SET_CONTRAST:
-        u8x8_cad_StartTransfer(u8x8);
-        u8x8_cad_SendCmd(u8x8, SWAP8(0x0A0));
-        u8x8_cad_SendArg(u8x8, SWAP8((arg_int * 4) >> 8));   /* Dimming level */
-        u8x8_cad_SendArg(u8x8, SWAP8((arg_int * 4) & 0xFF)); /* Dimming level */
-        u8x8_cad_EndTransfer(u8x8);
-        break;
+        case U8X8_MSG_DISPLAY_SET_CONTRAST:
+            u8x8_cad_StartTransfer(u8x8);
+            u8x8_cad_SendCmd(u8x8, SWAP8(0x0A0));
+            u8x8_cad_SendArg(u8x8, SWAP8((arg_int * 4) >> 8));   /* Dimming level */
+            u8x8_cad_SendArg(u8x8, SWAP8((arg_int * 4) & 0xFF)); /* Dimming level */
+            u8x8_cad_EndTransfer(u8x8);
+            break;
 #endif
-    case U8X8_MSG_DISPLAY_DRAW_TILE:
-        x = ((u8x8_tile_t *)arg_ptr)->x_pos * 8;
-        y = ((u8x8_tile_t *)arg_ptr)->y_pos * 8;
+        case U8X8_MSG_DISPLAY_DRAW_TILE:
+            x = ((u8x8_tile_t *)arg_ptr)->x_pos * 8;
+            y = ((u8x8_tile_t *)arg_ptr)->y_pos * 8;
 
-        u8x8_cad_StartTransfer(u8x8);
+            u8x8_cad_StartTransfer(u8x8);
 
-        u8x8_cad_SendCmd(u8x8, SWAP8(0x0F0));
-        u8x8_cad_SendArg(u8x8, SWAP8(x));
-        u8x8_cad_SendArg(u8x8, SWAP8(y));
-        u8x8_cad_SendArg(u8x8, SWAP8(0x007)); /* return every 8 pixels */
-        do
-        {
-            ptr = ((u8x8_tile_t *)arg_ptr)->tile_ptr;
-            tx_cnt = ((u8x8_tile_t *)arg_ptr)->cnt * 8;
-            while (tx_cnt > 0)
+            u8x8_cad_SendCmd(u8x8, SWAP8(0x0F0));
+            u8x8_cad_SendArg(u8x8, SWAP8(x));
+            u8x8_cad_SendArg(u8x8, SWAP8(y));
+            u8x8_cad_SendArg(u8x8, SWAP8(0x007)); /* return every 8 pixels */
+            do
             {
-                swapped_byte = SWAP8(*ptr);
-                u8x8_cad_SendData(u8x8, 1, &swapped_byte);
-                ptr += 1;
-                tx_cnt -= 1;
-            }
-            arg_int--;
-        } while (arg_int > 0);
+                ptr = ((u8x8_tile_t *)arg_ptr)->tile_ptr;
+                tx_cnt = ((u8x8_tile_t *)arg_ptr)->cnt * 8;
+                while (tx_cnt > 0)
+                {
+                    swapped_byte = SWAP8(*ptr);
+                    u8x8_cad_SendData(u8x8, 1, &swapped_byte);
+                    ptr += 1;
+                    tx_cnt -= 1;
+                }
+                arg_int--;
+            } while (arg_int > 0);
 
-        u8x8_cad_EndTransfer(u8x8);
-        break;
-    default:
-        return 0;
+            u8x8_cad_EndTransfer(u8x8);
+            break;
+        default:
+            return 0;
     }
     return 1;
 }
@@ -192,15 +201,15 @@ uint8_t u8x8_d_gp1247ai_253x63(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void 
 {
     switch (msg)
     {
-    case U8X8_MSG_DISPLAY_SETUP_MEMORY:
-        u8x8_d_helper_display_setup_memory(u8x8, &u8x8_gp1247ai_display_info);
-        break;
-    case U8X8_MSG_DISPLAY_INIT:
-        u8x8_d_helper_display_init(u8x8);
-        u8x8_cad_SendSequence(u8x8, u8x8_d_gp1247ai_init_seq);
-        break;
-    default:
-        return u8x8_d_gp1247ai_common(u8x8, msg, arg_int, arg_ptr);
+        case U8X8_MSG_DISPLAY_SETUP_MEMORY:
+            u8x8_d_helper_display_setup_memory(u8x8, &u8x8_gp1247ai_display_info);
+            break;
+        case U8X8_MSG_DISPLAY_INIT:
+            u8x8_d_helper_display_init(u8x8);
+            u8x8_cad_SendSequence(u8x8, u8x8_d_gp1247ai_init_seq);
+            break;
+        default:
+            return u8x8_d_gp1247ai_common(u8x8, msg, arg_int, arg_ptr);
     }
     return 1;
 }
